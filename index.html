@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>四象限时间管理</title>
+  <link rel="stylesheet" href="styles/theme.css">
+  <link rel="stylesheet" href="styles/main.css">
+  <link rel="stylesheet" href="styles/animations.css">
+</head>
+<body>
+  <div id="app">
+    <header class="titlebar">
+      <div class="titlebar-drag">
+        <span class="app-title">四象限时间管理</span>
+      </div>
+      <div class="titlebar-controls">
+        <button class="titlebar-btn" id="btn-minimize" title="最小化">
+          <svg width="12" height="12" viewBox="0 0 12 12"><rect y="5" width="12" height="2" fill="currentColor"/></svg>
+        </button>
+        <button class="titlebar-btn" id="btn-maximize" title="最大化">
+          <svg width="12" height="12" viewBox="0 0 12 12"><rect x="1" y="1" width="10" height="10" stroke="currentColor" stroke-width="1.5" fill="none"/></svg>
+        </button>
+        <button class="titlebar-btn btn-close" id="btn-close" title="关闭">
+          <svg width="12" height="12" viewBox="0 0 12 12"><line x1="1" y1="1" x2="11" y2="11" stroke="currentColor" stroke-width="1.5"/><line x1="11" y1="1" x2="1" y2="11" stroke="currentColor" stroke-width="1.5"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <div class="toolbar">
+      <div class="toolbar-left">
+        <button class="btn btn-primary" id="btn-add-task" title="添加任务 (Ctrl+N)">
+          <svg width="16" height="16" viewBox="0 0 16 16"><line x1="8" y1="2" x2="8" y2="14" stroke="currentColor" stroke-width="2"/><line x1="2" y1="8" x2="14" y2="8" stroke="currentColor" stroke-width="2"/></svg>
+          添加任务
+        </button>
+        <div class="search-box">
+          <svg width="16" height="16" viewBox="0 0 16 16"><circle cx="6" cy="6" r="4" stroke="currentColor" stroke-width="1.5" fill="none"/><line x1="9" y1="9" x2="14" y2="14" stroke="currentColor" stroke-width="1.5"/></svg>
+          <input type="text" id="search-input" placeholder="搜索任务... (Ctrl+F)" />
+        </div>
+      </div>
+      <div class="toolbar-right">
+        <div class="view-modes">
+          <button class="view-btn active" data-mode="classic" title="经典视图">
+            <svg width="16" height="16" viewBox="0 0 16 16"><rect x="1" y="1" width="6" height="6" stroke="currentColor" fill="none"/><rect x="9" y="1" width="6" height="6" stroke="currentColor" fill="none"/><rect x="1" y="9" width="6" height="6" stroke="currentColor" fill="none"/><rect x="9" y="9" width="6" height="6" stroke="currentColor" fill="none"/></svg>
+          </button>
+          <button class="view-btn" data-mode="list" title="列表视图">
+            <svg width="16" height="16" viewBox="0 0 16 16"><line x1="1" y1="3" x2="15" y2="3" stroke="currentColor" stroke-width="1.5"/><line x1="1" y1="8" x2="15" y2="8" stroke="currentColor" stroke-width="1.5"/><line x1="1" y1="13" x2="15" y2="13" stroke="currentColor" stroke-width="1.5"/></svg>
+          </button>
+          <button class="view-btn" data-mode="compact" title="紧凑视图">
+            <svg width="16" height="16" viewBox="0 0 16 16"><rect x="1" y="2" width="14" height="3" stroke="currentColor" fill="none"/><rect x="1" y="7" width="14" height="3" stroke="currentColor" fill="none"/><rect x="1" y="12" width="14" height="3" stroke="currentColor" fill="none"/></svg>
+          </button>
+        </div>
+        <button class="btn btn-icon" id="btn-theme" title="切换主题">
+          <svg width="16" height="16" viewBox="0 0 16 16"><circle cx="8" cy="8" r="4" fill="currentColor"/><path d="M8 0v2M8 14v2M0 8h2M14 8h2M2.3 2.3l1.4 1.4M12.3 12.3l1.4 1.4M2.3 13.7l1.4-1.4M12.3 3.7l1.4-1.4" stroke="currentColor" stroke-width="1.5"/></svg>
+        </button>
+        <button class="btn btn-icon" id="btn-pomodoro" title="番茄钟 (Ctrl+P)">
+          <svg width="16" height="16" viewBox="0 0 16 16"><circle cx="8" cy="9" r="5" stroke="currentColor" stroke-width="1.5" fill="none"/><line x1="8" y1="9" x2="8" y2="6" stroke="currentColor" stroke-width="1.5"/><line x1="8" y1="9" x2="10" y2="9" stroke="currentColor" stroke-width="1.5"/><line x1="6" y1="2" x2="10" y2="2" stroke="currentColor" stroke-width="1.5"/></svg>
+        </button>
+        <button class="btn btn-icon" id="btn-stats" title="统计 (Ctrl+I)">
+          <svg width="16" height="16" viewBox="0 0 16 16"><rect x="1" y="9" width="3" height="6" fill="currentColor"/><rect x="6" y="5" width="3" height="10" fill="currentColor"/><rect x="11" y="1" width="3" height="14" fill="currentColor"/></svg>
+        </button>
+        <button class="btn btn-icon" id="btn-backup" title="备份">
+          <svg width="16" height="16" viewBox="0 0 16 16"><path d="M2 10v3a1 1 0 001 1h10a1 1 0 001-1v-3" stroke="currentColor" stroke-width="1.5" fill="none"/><path d="M8 2v8M5 5l3-3 3 3" stroke="currentColor" stroke-width="1.5" fill="none"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <main class="quadrant-container" id="quadrant-container">
+      <div class="quadrant" data-quadrant="q1">
+        <div class="quadrant-header">
+          <span class="quadrant-color q1-color"></span>
+          <h2 class="quadrant-title">紧急且重要</h2>
+          <span class="quadrant-count" id="count-q1">0</span>
+        </div>
+        <div class="task-list" id="list-q1" data-quadrant="q1"></div>
+      </div>
+      <div class="quadrant" data-quadrant="q2">
+        <div class="quadrant-header">
+          <span class="quadrant-color q2-color"></span>
+          <h2 class="quadrant-title">重要不紧急</h2>
+          <span class="quadrant-count" id="count-q2">0</span>
+        </div>
+        <div class="task-list" id="list-q2" data-quadrant="q2"></div>
+      </div>
+      <div class="quadrant" data-quadrant="q3">
+        <div class="quadrant-header">
+          <span class="quadrant-color q3-color"></span>
+          <h2 class="quadrant-title">紧急不重要</h2>
+          <span class="quadrant-count" id="count-q3">0</span>
+        </div>
+        <div class="task-list" id="list-q3" data-quadrant="q3"></div>
+      </div>
+      <div class="quadrant" data-quadrant="q4">
+        <div class="quadrant-header">
+          <span class="quadrant-color q4-color"></span>
+          <h2 class="quadrant-title">不紧急不重要</h2>
+          <span class="quadrant-count" id="count-q4">0</span>
+        </div>
+        <div class="task-list" id="list-q4" data-quadrant="q4"></div>
+      </div>
+    </main>
+
+    <!-- Task Modal -->
+    <div class="modal-overlay" id="task-modal">
+      <div class="modal">
+        <div class="modal-header">
+          <h3 id="modal-title">添加任务</h3>
+          <button class="btn btn-icon modal-close" id="modal-close">
+            <svg width="16" height="16" viewBox="0 0 16 16"><line x1="2" y1="2" x2="14" y2="14" stroke="currentColor" stroke-width="1.5"/><line x1="14" y1="2" x2="2" y2="14" stroke="currentColor" stroke-width="1.5"/></svg>
+          </button>
+        </div>
+        <form id="task-form">
+          <input type="hidden" id="task-id">
+          <input type="hidden" id="task-quadrant" value="q2">
+          <div class="form-group">
+            <label for="task-title">标题</label>
+            <div class="title-input-row">
+              <input type="text" id="task-title" placeholder="任务标题（支持 #标签 !优先级 明天下午3点）" required autofocus>
+              <button type="button" class="btn btn-icon" id="btn-parse" title="智能解析">
+                <svg width="14" height="14" viewBox="0 0 14 14"><circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.2" fill="none"/><path d="M7 4v3l2 2" stroke="currentColor" stroke-width="1.2" fill="none"/></svg>
+              </button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="task-desc">描述</label>
+            <textarea id="task-desc" placeholder="任务描述（可选）" rows="2"></textarea>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="task-priority">优先级</label>
+              <select id="task-priority">
+                <option value="low">低</option>
+                <option value="medium" selected>中</option>
+                <option value="high">高</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="task-due">截止时间</label>
+              <input type="datetime-local" id="task-due">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="task-tags">标签</label>
+            <input type="text" id="task-tags" placeholder="用逗号分隔多个标签">
+          </div>
+          <div class="form-group">
+            <label>象限</label>
+            <div class="quadrant-select">
+              <button type="button" class="q-select q1" data-q="q1">紧急且重要</button>
+              <button type="button" class="q-select q2 active" data-q="q2">重要不紧急</button>
+              <button type="button" class="q-select q3" data-q="q3">紧急不重要</button>
+              <button type="button" class="q-select q4" data-q="q4">不紧急不重要</button>
+            </div>
+          </div>
+          <div class="form-actions">
+            <button type="button" class="btn btn-secondary" id="btn-cancel">取消</button>
+            <button type="submit" class="btn btn-primary">保存</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Confirm Modal -->
+    <div class="modal-overlay" id="confirm-modal">
+      <div class="modal modal-sm">
+        <div class="modal-header">
+          <h3>确认删除</h3>
+        </div>
+        <p id="confirm-message">确定要删除这个任务吗？</p>
+        <div class="form-actions">
+          <button class="btn btn-secondary" id="confirm-cancel">取消</button>
+          <button class="btn btn-danger" id="confirm-ok">删除</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pomodoro Panel -->
+    <div class="pomodoro-panel" id="pomodoro-panel">
+      <div class="pomodoro-header">
+        <span class="pomodoro-title">番茄钟</span>
+        <button class="btn btn-icon" id="pomodoro-close">
+          <svg width="14" height="14" viewBox="0 0 14 14"><line x1="2" y1="2" x2="12" y2="12" stroke="currentColor" stroke-width="1.5"/><line x1="12" y1="2" x2="2" y2="12" stroke="currentColor" stroke-width="1.5"/></svg>
+        </button>
+      </div>
+      <div class="pomodoro-display">
+        <span class="pomodoro-time" id="pomodoro-time">25:00</span>
+        <span class="pomodoro-status" id="pomodoro-status">准备开始</span>
+      </div>
+      <div class="pomodoro-controls">
+        <button class="btn btn-primary" id="pomodoro-start">开始</button>
+        <button class="btn btn-secondary" id="pomodoro-reset">重置</button>
+      </div>
+    </div>
+
+    <!-- Stats Panel -->
+    <div class="stats-panel" id="stats-panel">
+      <div class="stats-header">
+        <span class="stats-title">统计概览</span>
+        <button class="btn btn-icon" id="stats-close">
+          <svg width="14" height="14" viewBox="0 0 14 14"><line x1="2" y1="2" x2="12" y2="12" stroke="currentColor" stroke-width="1.5"/><line x1="12" y1="2" x2="2" y2="12" stroke="currentColor" stroke-width="1.5"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Backup Panel -->
+    <div class="backup-panel" id="backup-panel">
+      <div class="backup-header">
+        <span class="backup-title">备份管理</span>
+        <button class="btn btn-icon" id="backup-close">
+          <svg width="14" height="14" viewBox="0 0 14 14"><line x1="2" y1="2" x2="12" y2="12" stroke="currentColor" stroke-width="1.5"/><line x1="12" y1="2" x2="2" y2="12" stroke="currentColor" stroke-width="1.5"/></svg>
+        </button>
+      </div>
+      <div class="backup-content">
+        <button class="btn btn-primary btn-sm" id="btn-create-backup">创建备份</button>
+        <div class="backup-list" id="backup-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="node_modules/sortablejs/Sortable.min.js"></script>
+  <script src="scripts/storage.js"></script>
+  <script src="scripts/task-parser.js"></script>
+  <script src="scripts/search.js"></script>
+  <script src="scripts/undo-manager.js"></script>
+  <script src="scripts/pomodoro.js"></script>
+  <script src="scripts/stats.js"></script>
+  <script src="scripts/backup.js"></script>
+  <script src="scripts/app.js"></script>
+</body>
+</html>

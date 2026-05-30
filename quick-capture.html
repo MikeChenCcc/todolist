@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>快速捕获</title>
+  <link rel="stylesheet" href="styles/theme.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: var(--bg-secondary);
+      border-radius: 12px;
+      overflow: hidden;
+      height: 100vh;
+      border: 1px solid var(--border-color);
+    }
+
+    .quick-capture {
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .input-row {
+      display: flex;
+      gap: 8px;
+    }
+
+    .capture-input {
+      flex: 1;
+      padding: 10px 14px;
+      border: 2px solid var(--border-color);
+      border-radius: 8px;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      font-size: 14px;
+      outline: none;
+      transition: border-color 200ms ease;
+    }
+
+    .capture-input:focus {
+      border-color: var(--accent);
+    }
+
+    .capture-input::placeholder {
+      color: var(--text-tertiary);
+    }
+
+    .capture-btn {
+      padding: 10px 16px;
+      border: none;
+      border-radius: 8px;
+      background: var(--accent);
+      color: white;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: filter 150ms ease;
+    }
+
+    .capture-btn:hover {
+      filter: brightness(1.1);
+    }
+
+    .capture-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .preview {
+      padding: 8px 12px;
+      background: var(--bg-primary);
+      border-radius: 8px;
+      font-size: 12px;
+      color: var(--text-secondary);
+      min-height: 32px;
+      display: none;
+    }
+
+    .preview.show {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .preview-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 8px;
+      background: var(--bg-tertiary);
+      border-radius: 10px;
+    }
+
+    .preview-tag {
+      background: rgba(52, 152, 219, 0.15);
+      color: #3498DB;
+    }
+
+    .preview-priority {
+      background: rgba(231, 76, 60, 0.15);
+      color: #E74C3C;
+    }
+
+    .preview-date {
+      background: rgba(46, 204, 113, 0.15);
+      color: #2ECC71;
+    }
+
+    .quadrant-row {
+      display: flex;
+      gap: 6px;
+    }
+
+    .q-btn {
+      flex: 1;
+      padding: 6px;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      background: var(--bg-primary);
+      color: var(--text-secondary);
+      font-size: 11px;
+      cursor: pointer;
+      transition: all 150ms ease;
+      text-align: center;
+    }
+
+    .q-btn:hover {
+      border-color: var(--text-tertiary);
+    }
+
+    .q-btn.active {
+      color: white;
+      border-color: transparent;
+    }
+
+    .q-btn.q1.active { background: #E74C3C; }
+    .q-btn.q2.active { background: #3498DB; }
+    .q-btn.q3.active { background: #F39C12; }
+    .q-btn.q4.active { background: #95A5A6; }
+
+    .hint {
+      font-size: 11px;
+      color: var(--text-tertiary);
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="quick-capture">
+    <div class="input-row">
+      <input type="text" class="capture-input" id="capture-input" placeholder="输入任务... (支持 #标签 !优先级 日期)" autofocus>
+      <button class="capture-btn" id="capture-btn" disabled>添加</button>
+    </div>
+    <div class="preview" id="preview"></div>
+    <div class="quadrant-row">
+      <button class="q-btn q1" data-q="q1">紧急重要</button>
+      <button class="q-btn q2 active" data-q="q2">重要不紧急</button>
+      <button class="q-btn q3" data-q="q3">紧急不重要</button>
+      <button class="q-btn q4" data-q="q4">不紧急不重要</button>
+    </div>
+    <div class="hint">Enter 添加 · Escape 关闭</div>
+  </div>
+
+  <script src="scripts/task-parser.js"></script>
+  <script>
+    const input = document.getElementById('capture-input');
+    const btn = document.getElementById('capture-btn');
+    const preview = document.getElementById('preview');
+    let selectedQuadrant = 'q2';
+
+    document.querySelectorAll('.q-btn').forEach(qBtn => {
+      qBtn.addEventListener('click', () => {
+        document.querySelectorAll('.q-btn').forEach(b => b.classList.remove('active'));
+        qBtn.classList.add('active');
+        selectedQuadrant = qBtn.dataset.q;
+      });
+    });
+
+    input.addEventListener('input', () => {
+      const value = input.value.trim();
+      btn.disabled = !value;
+      updatePreview(value);
+    });
+
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && input.value.trim()) {
+        addTask();
+      }
+      if (e.key === 'Escape') {
+        window.electronAPI.closeQuickCapture();
+      }
+    });
+
+    btn.addEventListener('click', addTask);
+
+    function updatePreview(text) {
+      if (!text) {
+        preview.classList.remove('show');
+        preview.innerHTML = '';
+        return;
+      }
+
+      const parsed = TaskParser.parse(text);
+      const items = [];
+
+      if (parsed.tags.length) {
+        parsed.tags.forEach(tag => {
+          items.push(`<span class="preview-item preview-tag">#${tag}</span>`);
+        });
+      }
+      if (parsed.priority) {
+        items.push(`<span class="preview-item preview-priority">!${parsed.priority}</span>`);
+      }
+      if (parsed.dueDate) {
+        const dateStr = new Date(parsed.dueDate).toLocaleDateString('zh-CN', { month: 'short', day: 'numeric', hour: 'numeric', minute: 'numeric' });
+        items.push(`<span class="preview-item preview-date">${dateStr}</span>`);
+      }
+
+      if (items.length) {
+        preview.innerHTML = items.join('');
+        preview.classList.add('show');
+      } else {
+        preview.classList.remove('show');
+        preview.innerHTML = '';
+      }
+    }
+
+    function addTask() {
+      const text = input.value.trim();
+      if (!text) return;
+
+      const parsed = TaskParser.parse(text);
+      const task = {
+        title: parsed.title,
+        desc: '',
+        priority: parsed.priority || 'medium',
+        tags: parsed.tags,
+        dueDate: parsed.dueDate || null
+      };
+
+      window.electronAPI.addTask(selectedQuadrant, task).then(() => {
+        input.value = '';
+        preview.classList.remove('show');
+        btn.disabled = true;
+
+        setTimeout(() => {
+          window.electronAPI.closeQuickCapture();
+        }, 100);
+      });
+    }
+  </script>
+</body>
+</html>

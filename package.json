@@ -1,0 +1,49 @@
+{
+  "name": "quadrant-app",
+  "version": "1.0.0",
+  "description": "四象限时间管理工具 - 轻量高效的本地任务管理",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder",
+    "build:win": "electron-builder --win",
+    "build:mac": "electron-builder --mac",
+    "build:linux": "electron-builder --linux"
+  },
+  "devDependencies": {
+    "electron": "^22.0.0",
+    "electron-builder": "^24.9.1"
+  },
+  "dependencies": {
+    "sortablejs": "^1.15.0",
+    "uuid": "^9.0.0"
+  },
+  "build": {
+    "appId": "com.quadrant.app",
+    "productName": "四象限时间管理",
+    "directories": {
+      "output": "dist"
+    },
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64",
+            "ia32"
+          ]
+        }
+      ],
+      "icon": "assets/icon.ico",
+      "requestedExecutionLevel": "asInvoker"
+    },
+    "mac": {
+      "target": "dmg",
+      "icon": "assets/icon.icns"
+    },
+    "linux": {
+      "target": "AppImage",
+      "icon": "assets/icon.png"
+    }
+  }
+}

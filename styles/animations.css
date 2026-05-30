@@ -1,0 +1,122 @@
+.task-card {
+  animation: card-enter 250ms ease-out;
+}
+
+@keyframes card-enter {
+  from {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.task-card.removing {
+  animation: card-remove 200ms ease-in forwards;
+}
+
+@keyframes card-remove {
+  to {
+    opacity: 0;
+    transform: translateX(30px) scale(0.95);
+  }
+}
+
+.task-card.completing {
+  animation: card-complete 300ms ease-in-out forwards;
+}
+
+@keyframes card-complete {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.02);
+  }
+  100% {
+    opacity: 0.5;
+    transform: scale(1);
+  }
+}
+
+.task-card.dragging {
+  opacity: 0.8;
+  transform: scale(1.03);
+  box-shadow: var(--shadow-lg);
+  z-index: 100;
+}
+
+.quadrant.drag-over {
+  background: var(--q2-bg);
+  transition: background 200ms ease-in-out;
+}
+
+.sortable-ghost {
+  opacity: 0.4;
+}
+
+.sortable-chosen {
+  cursor: grabbing;
+}
+
+.modal-overlay {
+  animation: overlay-enter 200ms ease-out;
+}
+
+@keyframes overlay-enter {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.modal-overlay .modal {
+  animation: modal-enter 200ms ease-out;
+}
+
+@keyframes modal-enter {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.pomodoro-panel.show {
+  animation: panel-slide-in 300ms ease-out;
+}
+
+@keyframes panel-slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.pomodoro-time.running {
+  animation: pulse 2s ease-in-out infinite;
+}
+
+[data-theme] * {
+  transition: background-color 350ms ease, color 350ms ease, border-color 350ms ease;
+}
